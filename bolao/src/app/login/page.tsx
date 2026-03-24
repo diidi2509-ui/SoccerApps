@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
@@ -39,7 +40,15 @@ export default function LoginPage() {
           {loading ? 'Redirecionando...' : 'Entrar com Google'}
         </button>
         <p className="text-gray-600 text-xs mt-6">
-          Ao entrar, você concorda com os Termos de Uso e Política de Privacidade.
+          Ao entrar, voce concorda com os{' '}
+          <Link href="/termos" className="underline hover:text-gray-500">
+            Termos de Uso
+          </Link>{' '}
+          e a{' '}
+          <Link href="/privacidade" className="underline hover:text-gray-500">
+            Politica de Privacidade
+          </Link>
+          .
         </p>
       </div>
     </main>

@@ -80,7 +80,15 @@ export default function Home() {
       </section>
 
       <footer className="text-center text-gray-700 text-sm py-6 border-t border-gray-800">
-        Bolão Amigos · Feito para o Brasil
+        <div className="flex items-center justify-center gap-3">
+          <span>Bolao Amigos · Feito para o Brasil</span>
+          <Link href="/termos" className="underline hover:text-gray-500">
+            Termos
+          </Link>
+          <Link href="/privacidade" className="underline hover:text-gray-500">
+            Privacidade
+          </Link>
+        </div>
       </footer>
     </main>
   )

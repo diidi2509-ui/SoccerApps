@@ -147,6 +147,19 @@ create policy "Palpites visíveis para membros da liga" on public.predictions fo
 create policy "Usuário cria próprio palpite" on public.predictions for insert with check (user_id = auth.uid());
 create policy "Usuário atualiza próprio palpite (antes do fechamento)" on public.predictions for update using (user_id = auth.uid());
 
+-- Eventos de pagamento (auditoria + idempotência de webhook)
+create table public.payment_events (
+  id uuid default gen_random_uuid() primary key,
+  provider text not null,
+  payment_id text not null unique,
+  league_id uuid references public.leagues(id) on delete cascade not null,
+  status text not null,
+  raw_payload jsonb not null,
+  created_at timestamptz default now()
+);
+alter table public.payment_events enable row level security;
+create policy "Somente service role gerencia eventos de pagamento" on public.payment_events for all using (false);
+
 -- ============================================================
 -- FUNÇÃO: calcular pontos por rodada
 -- Regra: placar exato = 3pts | resultado correto = 1pt

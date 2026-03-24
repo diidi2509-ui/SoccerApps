@@ -28,6 +28,11 @@ export async function POST(request: NextRequest) {
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL
+  if (!appUrl) {
+    return NextResponse.json({ error: 'NEXT_PUBLIC_APP_URL not configured' }, { status: 500 })
+  }
+
+  const notificationUrl = process.env.MP_WEBHOOK_URL ?? `${appUrl}/api/webhook/mercadopago`
 
   // Criar preferência no Mercado Pago
   const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
@@ -55,6 +60,11 @@ export async function POST(request: NextRequest) {
       auto_return: 'approved',
       external_reference: `${leagueId}|${user.id}`,
       statement_descriptor: 'BOLAO AMIGOS',
+      notification_url: notificationUrl,
+      metadata: {
+        league_id: leagueId,
+        owner_id: user.id,
+      },
     }),
   })
 
