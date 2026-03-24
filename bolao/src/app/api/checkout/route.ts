@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { League } from '@/types/database'
 
 export async function POST(request: NextRequest) {
   const supabase = createClient()
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     .select('*')
     .eq('id', leagueId)
     .eq('owner_id', user.id)
-    .single()
+    .single() as { data: League | null }
 
   if (!league) {
     return NextResponse.json({ error: 'League not found' }, { status: 404 })

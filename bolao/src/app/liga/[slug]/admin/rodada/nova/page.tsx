@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import { League } from '@/types/database'
 import { Plus, Trash2 } from 'lucide-react'
 
 interface MatchInput {
@@ -53,7 +54,7 @@ export default function NovaRodadaPage() {
       .select('*')
       .eq('slug', slug)
       .eq('owner_id', user.id)
-      .single()
+      .single() as unknown as { data: League | null }
 
     if (!league) { setError('Você não é dono dessa liga.'); setLoading(false); return }
 

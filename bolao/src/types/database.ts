@@ -166,3 +166,8 @@ export interface RankingEntry {
   result_hits: number
   position: number
 }
+
+// Tipos para queries com joins (Supabase não infere automaticamente)
+export interface LeagueWithCount extends League {
+  league_members: { count: number }[]
+}

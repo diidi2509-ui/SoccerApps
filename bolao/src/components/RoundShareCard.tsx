@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { RankingEntry } from '@/types/database'
-import { Share2, Download } from 'lucide-react'
+import { Share2 } from 'lucide-react'
 
 interface Props {
   leagueName: string

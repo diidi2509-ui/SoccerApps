@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { JoinLeagueButton } from '@/components/JoinLeagueButton'
 import { Users, Trophy } from 'lucide-react'
+import { LeagueWithCount } from '@/types/database'
 
 interface Props {
   params: { slug: string }
@@ -15,7 +16,7 @@ export default async function ConvitePage({ params }: Props) {
     .from('leagues')
     .select('*, league_members(count)')
     .eq('slug', params.slug)
-    .single()
+    .single() as { data: LeagueWithCount | null }
 
   if (!league) {
     return (

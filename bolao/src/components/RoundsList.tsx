@@ -20,7 +20,7 @@ const statusLabel: Record<string, { label: string; color: string }> = {
   finished: { label: 'Finalizada', color: 'text-gray-500 bg-gray-800' },
 }
 
-export function RoundsList({ rounds, leagueSlug }: Props) {
+export function RoundsList({ rounds, leagueSlug }: Omit<Props, 'userId'> & { userId?: string }) {
   if (!rounds.length) {
     return <p className="text-gray-500 text-sm">Nenhuma rodada criada ainda.</p>
   }

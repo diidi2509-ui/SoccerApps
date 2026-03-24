@@ -9,11 +9,6 @@ interface Props {
   isFinished: boolean
 }
 
-function getResult(home: number, away: number): 'home' | 'draw' | 'away' {
-  if (home > away) return 'home'
-  if (home === away) return 'draw'
-  return 'away'
-}
 
 export function RoundResultsView({ matches, predictionMap, isFinished }: Props) {
   return (

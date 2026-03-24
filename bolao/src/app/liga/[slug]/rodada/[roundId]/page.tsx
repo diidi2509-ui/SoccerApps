@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { PredictionsForm } from '@/components/PredictionsForm'
 import { RoundResultsView } from '@/components/RoundResultsView'
 import { format } from 'date-fns'
+import { Match } from '@/types/database'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -34,7 +35,7 @@ export default async function RoundPage({ params }: Props) {
   if (!round) notFound()
 
   // Palpites do usuário nessa rodada
-  const matchIds = round.matches.map((m: any) => m.id)
+  const matchIds = (round.matches as Match[]).map(m => m.id)
   const { data: myPredictions } = await supabase
     .from('predictions')
     .select('*')

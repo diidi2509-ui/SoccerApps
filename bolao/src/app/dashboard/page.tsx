@@ -2,6 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, Trophy, Users } from 'lucide-react'
+import { Profile, League } from '@/types/database'
+
+interface LeagueRow extends League {
+  league_members: { count: number }[]
+}
 
 export default async function DashboardPage() {
   const supabase = createClient()
@@ -9,28 +14,38 @@ export default async function DashboardPage() {
 
   if (!user) redirect('/login')
 
-  // Ligas que o usuário é dono
-  const { data: ownedLeagues } = await supabase
-    .from('leagues')
-    .select('*, league_members(count)')
-    .eq('owner_id', user.id)
-    .order('created_at', { ascending: false })
+  const [
+    { data: ownedLeagues },
+    { data: memberLeagues },
+    { data: profile },
+  ] = await Promise.all([
+    supabase
+      .from('leagues')
+      .select('*, league_members(count)')
+      .eq('owner_id', user.id)
+      .order('created_at', { ascending: false }) as unknown as Promise<{ data: LeagueRow[] | null }>,
+    supabase
+      .from('league_members')
+      .select('league:leagues(*, league_members(count))')
+      .eq('user_id', user.id) as unknown as Promise<{ data: { league: LeagueRow }[] | null }>,
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single() as unknown as Promise<{ data: Profile | null }>,
+  ])
 
-  // Ligas que o usuário é membro (mas não dono)
-  const { data: memberLeagues } = await supabase
-    .from('league_members')
-    .select('league:leagues(*, league_members(count))')
-    .eq('user_id', user.id)
-    .neq('league.owner_id', user.id)
-
-  const profile = await supabase.from('profiles').select('*').eq('id', user.id).single()
+  // Filtrar ligas onde não é dono
+  const otherLeagues = (memberLeagues ?? [])
+    .map(m => m.league)
+    .filter((l): l is LeagueRow => !!l && l.owner_id !== user.id)
 
   return (
     <main className="min-h-screen px-4 py-8 max-w-2xl mx-auto">
       <header className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-black">Meus Bolões</h1>
-          <p className="text-gray-400 text-sm">Olá, {profile.data?.name?.split(' ')[0]}</p>
+          <p className="text-gray-400 text-sm">Olá, {profile?.name?.split(' ')[0] ?? 'amigo'}</p>
         </div>
         <Link href="/liga/nova" className="btn-primary flex items-center gap-2 text-sm px-4 py-2">
           <Plus size={16} />
@@ -38,31 +53,29 @@ export default async function DashboardPage() {
         </Link>
       </header>
 
-      {/* Meus bolões */}
       {ownedLeagues && ownedLeagues.length > 0 && (
         <section className="mb-8">
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Criados por mim</h2>
           <div className="flex flex-col gap-3">
-            {ownedLeagues.map((league: any) => (
+            {ownedLeagues.map(league => (
               <LeagueCard key={league.id} league={league} isOwner />
             ))}
           </div>
         </section>
       )}
 
-      {/* Participo */}
-      {memberLeagues && memberLeagues.length > 0 && (
+      {otherLeagues.length > 0 && (
         <section className="mb-8">
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Participo</h2>
           <div className="flex flex-col gap-3">
-            {memberLeagues.map((m: any) => m.league && (
-              <LeagueCard key={m.league.id} league={m.league} isOwner={false} />
+            {otherLeagues.map(league => (
+              <LeagueCard key={league.id} league={league} isOwner={false} />
             ))}
           </div>
         </section>
       )}
 
-      {(!ownedLeagues?.length && !memberLeagues?.length) && (
+      {!ownedLeagues?.length && !otherLeagues.length && (
         <div className="card text-center py-12">
           <div className="text-5xl mb-4">⚽</div>
           <h3 className="font-bold text-lg mb-2">Nenhum bolão ainda</h3>
@@ -77,7 +90,7 @@ export default async function DashboardPage() {
   )
 }
 
-function LeagueCard({ league, isOwner }: { league: any; isOwner: boolean }) {
+function LeagueCard({ league, isOwner }: { league: LeagueRow; isOwner: boolean }) {
   const membersCount = league.league_members?.[0]?.count ?? 0
 
   return (

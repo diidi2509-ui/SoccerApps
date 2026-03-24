@@ -1,6 +1,5 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -12,10 +11,11 @@ interface Props {
 export function JoinLeagueButton({ leagueId, leagueSlug }: Props) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   async function join() {
     setLoading(true)
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
 
